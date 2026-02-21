@@ -70,9 +70,7 @@ if __name__ == "__main__":
         device = torch.device("cpu")
     # HF inference code
     classificator_type = "linear"
-    model = VITContrastiveHF(
-        repo_name="aimagelab/CoDE", classificator_type=classificator_type
-    )
+    model = VITContrastiveHF(classificator_type=classificator_type)
 
     transform = transforms.Compose(
         [
