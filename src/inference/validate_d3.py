@@ -83,6 +83,32 @@ def get_list(path, must_contain=""):
         image_list = recursively_read(path, must_contain)
     return image_list
 
+class AddGaussianNoise(object):
+    def __init__(self, mean=0., std=1.):
+        self.std = std
+        self.mean = mean
+        
+    def __call__(self, tensor):
+        return tensor + torch.randn(tensor.size()) * self.std + self.mean
+
+class ImpulsiveNoise(torch.nn.Module):
+    """Adiciona ruído impulsivo (Salt and Pepper)."""
+    def __init__(self, amount=0.05):
+        super().__init__()
+        self.amount = amount # Fração de pixels afetados
+
+    def forward(self, tensor):
+        # tensor shape: (C, H, W)
+        res = tensor.clone()
+        # Gera uma máscara aleatória para os pixels
+        mask = torch.rand(res.shape[1:]) # H, W
+        
+        # Salt (Sal - Pixels Brancos)
+        res[:, mask < (self.amount / 2)] = 1.0
+        # Pepper (Pimenta - Pixels Pretos)
+        res[:, (mask >= (self.amount / 2)) & (mask < self.amount)] = 0.0
+        
+        return res
 
 class RealFakeDataset(Dataset):
     def __init__(
@@ -166,13 +192,13 @@ if __name__ == "__main__":
 
     model = VITContrastiveHF(classificator_type=opt.classificator_type)
 
-    transform = transforms.Compose(
-        [
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
+    robust_transform = transforms.Compose([
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        AddGaussianNoise(0., 0.1),       # Insere Ruído Gaussiano
+        ImpulsiveNoise(0.05),     # Insere Salt and Pepper
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
     print("Model loaded..")
     model.eval()
     model.cuda()
