@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     model = VITContrastiveHF(classificator_type=opt.classificator_type)
 
-    robust_transform = transforms.Compose([
+    transform = transforms.Compose([
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         AddGaussianNoise(0., 0.1),       # Insere Ruído Gaussiano
