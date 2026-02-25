@@ -25,6 +25,8 @@ from validate_d3 import (
     calculate_acc,
     calculate_acc_svm,
     set_seed,
+    AddGaussianNoise,
+    ImpulsiveNoise,
 )
 from elsa_streaming_loader import ELSAStreamingDataset
 
@@ -33,6 +35,8 @@ def get_transform():
     return transforms.Compose([
         transforms.CenterCrop(224),
         transforms.ToTensor(),
+        AddGaussianNoise(0., 0.1),       # Insere Ruído Gaussiano
+        ImpulsiveNoise(0.05),     # Insere Salt and Pepper
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
